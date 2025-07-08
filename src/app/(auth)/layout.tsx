@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
+import { RegisterProvider } from "@/context/registerContext";
+
 
 export const metadata: Metadata = {
   title: "Livraria Fracaro",
@@ -14,7 +16,9 @@ export default function AuthLayout({
   return (
     <html lang="pt-br">
       <body>
-        {children}
+        <RegisterProvider>
+          {children}
+        </RegisterProvider>
       </body>
     </html>
   );

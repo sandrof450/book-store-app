@@ -1,7 +1,7 @@
 'use client'
 
 import { loginSchema } from "@/constants/schemas";
-import { LoginData } from "@/constants/types";
+import { LoginData, User } from "@/constants/types";
 import { useUserContext } from "@/context/useUser";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, BookOpen, Eye, EyeOff, Mail } from "lucide-react";
@@ -26,12 +26,22 @@ export default function Login() {
   })
 
   const onSubmit = (data: LoginData) => {
-    if (data.email === 'admin@gmail.com') {
-      login({email:data.email})
-      console.log("Autenticado com::", data);
-      router.push("/home");
-    } else{
-      alert("Acesso não autorizado");
+    const users: User[] = JSON.parse(localStorage.getItem("users") || "[]")
+    const user = users.find(u => u.email.toLowerCase() === data.email.toLowerCase() && u.password === data.password)
+
+   
+    if (user) {
+      if (data.email === 'admin@gmail.com') {
+        login({ email: data.email })
+        router.push("/home");
+        return
+      }
+      login({name: user.name || "Usuário", email: user.email})
+      localStorage.setItem("loggedUser", JSON.stringify(user)) 
+      alert("Logado")
+      router.push("/home")
+    } else {
+      alert('Credenciais inválidas')
     }
   }
 

@@ -1,17 +1,55 @@
-import { ArrowRight, BookOpen, Check, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+'use client'
+
+import { registerSchema } from "@/constants/schemas";
+import { RegisterData, User } from "@/constants/types";
+import { useRegister } from "@/context/registerContext";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight, BookOpen, Check, Eye, EyeOff, Lock, Mail, User as UserIcon } from "lucide-react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-const getPasswordStrength = (password: any) => {
-    if (password.length < 6) return { strength: 'weak', color: 'bg-red-500', text: 'Fraca' };
-    if (password.length < 10) return { strength: 'medium', color: 'bg-yellow-500', text: 'Média' };
-    return { strength: 'strong', color: 'bg-green-500', text: 'Forte' };
-  };
 
-  // const passwordStrength = getPasswordStrength(formData.password);
+
 
 
 
 export default function Register() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const router = useRouter();  
+  const { register: inputRegister } = useRegister()
+  
+  const getPasswordStrength = (password: any) => {
+    if (password.length < 6) return { strength: 'weak', color: 'bg-red-500', text: 'Fraca' };
+    if (password.length < 10) return { strength: 'medium', color: 'bg-yellow-500', text: 'Média' };
+    return { strength: 'strong', color: 'bg-green-500', text: 'Forte' };
+  };
+  
+  const passwordStrength = getPasswordStrength(inputRegister.password);
+  
+  const {
+    register,
+    handleSubmit,
+    // formState: {errors}
+  } = useForm<RegisterData>({
+    resolver: zodResolver(registerSchema)
+  })
+  
+  const onSubmit = (e: RegisterData) => {
+    const users: User[] = JSON.parse(localStorage.getItem("users") || "[]")
+    users.push({
+      name: inputRegister.name,
+      email: inputRegister.email,
+      password: inputRegister.password,
+    })
+    localStorage.setItem("users", JSON.stringify(users))
+    alert("Cadastro realizado")
+    router.push("/login")
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -31,7 +69,7 @@ export default function Register() {
         {/* Register Form */}
         <div className="bg-white rounded-3xl shadow-2xl p-8">
           <form
-            // onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             className="space-y-6">
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
@@ -41,15 +79,12 @@ export default function Register() {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
+                    <UserIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="firstName"
-                    name="firstName"
                     type="text"
-                    required
-                    //value={formData.firstName}
-                    //onChange={handleInputChange}
+                    {...register("name")}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="João"
                   />
@@ -62,11 +97,8 @@ export default function Register() {
                 </label>
                 <input
                   id="lastName"
-                  name="lastName"
                   type="text"
-                  required
-                  //value={formData.lastName}
-                  //onChange={handleInputChange}
+                  {...register("lastName")}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Silva"
                 />
@@ -84,11 +116,9 @@ export default function Register() {
                 </div>
                 <input
                   id="email"
-                  name="email"
                   type="email"
                   required
-                  //value={formData.email}
-                  //onChange={handleInputChange}
+                  {...register("email")}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="seu@email.com"
                 />
@@ -106,21 +136,18 @@ export default function Register() {
                 </div>
                 <input
                   id="password"
-                  name="password"
-                  // type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   required
-                  //value={formData.password}
-                  //onChange={handleInputChange}
+                  {...register("password")}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Mínimo 6 caracteres"
                 />
                 <button
                   type="button"
-                  //onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
-                  {true
-                    // showPassword
+                  {showPassword
                     ? (
                     <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                   ) : (
@@ -130,19 +157,18 @@ export default function Register() {
               </div>
 
               {/* Password Strength Indicator */}
-              {true
-                // formData.password
+              {inputRegister.password
                 && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div 
                         className={`h-2 rounded-full transition-all duration-300 {passwordStrength.color}`}
-                        // style={{ width: passwordStrength.strength === 'weak' ? '33%' : passwordStrength.strength === 'medium' ? '66%' : '100%' }}
+                        style={{ width: passwordStrength.strength === 'weak' ? '33%' : passwordStrength.strength === 'medium' ? '66%' : '100%' }}
                       />
                     </div>
                     <span className="text-xs font-medium text-gray-600">
-                      {/* {passwordStrength.text} */}
+                      {passwordStrength.text}
                     </span>
                   </div>
                 </div>
@@ -160,17 +186,15 @@ export default function Register() {
                 </div>
                 <input
                   id="confirmPassword"
-                  name="confirmPassword"
-                  //type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   required
-                  //value={formData.confirmPassword}
-                  //onChange={handleInputChange}
+                  {...register("confirmPassword")}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   placeholder="Confirme sua senha"
                 />
                 <button
                   type="button"
-                  //onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {true
@@ -184,12 +208,10 @@ export default function Register() {
               </div>
 
               {/* Password Match Indicator */}
-              {true
-                // formData.confirmPassword
+              {inputRegister.confirmPassWord
               && (
                 <div className="flex items-center gap-2 text-sm">
-                  {true
-                    // formData.password === formData.confirmPassword
+                  {inputRegister.password === inputRegister.confirmPassWord
                       ? (
                     <>
                       <Check className="w-4 h-4 text-green-500" />
