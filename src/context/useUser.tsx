@@ -1,12 +1,11 @@
 'use client'
 
+import { User } from "@/constants/types";
 // import { User } from "@/constants/types";
 import {createContext, useContext, useState} from "react";
 
 
-type User = {
-  email: string;
-}
+
 
 type UserContextType = {
     user: User | null;
