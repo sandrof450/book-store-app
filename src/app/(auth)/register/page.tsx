@@ -22,7 +22,7 @@ export default function Register() {
   const router = useRouter();  
   const { register: inputRegister } = useRegister()
   
-  const getPasswordStrength = (password: any) => {
+  const getPasswordStrength = (password: string) => {
     if (password.length < 6) return { strength: 'weak', color: 'bg-red-500', text: 'Fraca' };
     if (password.length < 10) return { strength: 'medium', color: 'bg-yellow-500', text: 'Média' };
     return { strength: 'strong', color: 'bg-green-500', text: 'Forte' };
@@ -38,7 +38,7 @@ export default function Register() {
     resolver: zodResolver(registerSchema)
   })
   
-  const onSubmit = (e: RegisterData) => {
+  const onSubmit = () => {
     const users: User[] = JSON.parse(localStorage.getItem("users") || "[]")
     users.push({
       name: inputRegister.name,
